@@ -1,0 +1,179 @@
+{
+  "mcp_version": "3.2",
+  "runtime": "local",
+  "server_port": 3334,
+  "description": "PortableLM MCP Fast 3.2 tool registry. All tools are sandboxed, permission-scoped, and audit-logged.",
+  "tools": [
+    {
+      "id": "shell_exec",
+      "name": "Shell Executor",
+      "description": "Run shell commands in a sandboxed subprocess. Output captured and returned.",
+      "scope": ["local"],
+      "requires_approval": true,
+      "allowed_profiles": ["redteam", "bugbounty", "cybersec", "ir"],
+      "sandboxed": true,
+      "timeout_seconds": 30,
+      "audit": true
+    },
+    {
+      "id": "file_reader",
+      "name": "File Reader",
+      "description": "Read files from the USB drive within allowed paths only.",
+      "scope": ["local"],
+      "requires_approval": false,
+      "path_restriction": "USB_ROOT",
+      "audit": true
+    },
+    {
+      "id": "file_writer",
+      "name": "File Writer",
+      "description": "Write files to the USB drive. Restricted to Shared/output/ directory only.",
+      "scope": ["local"],
+      "requires_approval": true,
+      "path_restriction": "USB_ROOT/Shared/output",
+      "audit": true
+    },
+    {
+      "id": "nuclei_scan",
+      "name": "Nuclei Scanner",
+      "description": "Run Nuclei templates against authorized targets. Requires target authorization confirmation before execution.",
+      "scope": ["local", "lab"],
+      "requires_approval": true,
+      "allowed_profiles": ["bugbounty", "redteam", "cybersec"],
+      "binary": "bin/nuclei",
+      "authorization_required": true,
+      "audit": true
+    },
+    {
+      "id": "sigma_rule_gen",
+      "name": "Sigma Rule Generator",
+      "description": "Generate Sigma detection rules from threat intel, IOCs, or attack behaviour descriptions.",
+      "scope": ["local"],
+      "requires_approval": false,
+      "output_format": "yaml",
+      "audit": false
+    },
+    {
+      "id": "yara_scan",
+      "name": "YARA Scanner",
+      "description": "Scan files against YARA rules for malware indicators.",
+      "scope": ["local", "lab"],
+      "requires_approval": true,
+      "allowed_profiles": ["cybersec", "ir", "redteam"],
+      "binary": "bin/yara",
+      "audit": true
+    },
+    {
+      "id": "mitre_lookup",
+      "name": "MITRE ATT&CK Lookup",
+      "description": "Map TTPs to MITRE ATT&CK techniques, sub-techniques, mitigations, and data sources. Works fully offline.",
+      "scope": ["local", "offline"],
+      "requires_approval": false,
+      "audit": false
+    },
+    {
+      "id": "web_fetch",
+      "name": "Web Fetch / OSINT",
+      "description": "Fetch URLs for OSINT, CVE lookups, and threat intel enrichment from approved domains only.",
+      "scope": ["remote"],
+      "requires_approval": false,
+      "rate_limit": "30/min",
+      "allowed_domains": [
+        "cve.mitre.org",
+        "nvd.nist.gov",
+        "otx.alienvault.com",
+        "viz.greynoise.io",
+        "attack.mitre.org",
+        "www.exploit-db.com",
+        "github.com",
+        "raw.githubusercontent.com",
+        "crt.sh",
+        "urlhaus.abuse.ch"
+      ],
+      "audit": true
+    },
+    {
+      "id": "cve_lookup",
+      "name": "CVE / NVD Lookup",
+      "description": "Look up CVE details, CVSS scores, affected products, and available patches from NVD.",
+      "scope": ["remote"],
+      "requires_approval": false,
+      "rate_limit": "60/min",
+      "audit": false
+    },
+    {
+      "id": "hash_check",
+      "name": "File Hash Checker",
+      "description": "Compute MD5/SHA1/SHA256 of files. Optionally check against threat intel feeds.",
+      "scope": ["local"],
+      "requires_approval": false,
+      "audit": true
+    },
+    {
+      "id": "port_scan",
+      "name": "Port Scanner (Authorized Targets Only)",
+      "description": "Run a port scan against an explicitly authorized target. Requires scope confirmation before execution.",
+      "scope": ["local", "lab"],
+      "requires_approval": true,
+      "authorization_required": true,
+      "allowed_profiles": ["bugbounty", "redteam", "cybersec"],
+      "binary": "bin/nmap",
+      "audit": true
+    },
+    {
+      "id": "report_gen",
+      "name": "Report Generator",
+      "description": "Generate structured security reports in Markdown, HTML, or JSON from session findings.",
+      "scope": ["local"],
+      "requires_approval": false,
+      "output_formats": ["markdown", "html", "json"],
+      "output_path": "USB_ROOT/Shared/output/reports",
+      "audit": false
+    }
+  ],
+  "skills_directory": "../skills",
+  "connections": [
+    {
+      "id": "claude_desktop",
+      "type": "mcp_client",
+      "status": "available",
+      "config": {"transport": "stdio", "command": "python3", "args": ["Shared/mcp/server.py"]}
+    },
+    {
+      "id": "vscode",
+      "type": "mcp_client",
+      "status": "available",
+      "config": {"transport": "http", "url": "http://localhost:3334/mcp"}
+    },
+    {
+      "id": "cursor",
+      "type": "mcp_client",
+      "status": "available",
+      "config": {"transport": "http", "url": "http://localhost:3334/mcp"}
+    },
+    {
+      "id": "kilocode_ide",
+      "type": "mcp_client",
+      "status": "available",
+      "config": {"transport": "http", "url": "http://localhost:3334/mcp"}
+    },
+    {
+      "id": "github",
+      "type": "mcp_remote",
+      "status": "configurable",
+      "api_key_env": "GITHUB_TOKEN"
+    },
+    {
+      "id": "jira",
+      "type": "mcp_remote",
+      "status": "configurable",
+      "api_key_env": "JIRA_API_TOKEN"
+    },
+    {
+      "id": "slack",
+      "type": "mcp_remote",
+      "status": "configurable",
+      "api_key_env": "SLACK_BOT_TOKEN"
+    }
+  ]
+}
