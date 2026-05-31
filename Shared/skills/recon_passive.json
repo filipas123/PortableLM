@@ -1,0 +1,46 @@
+{
+  "id": "recon_passive",
+  "name": "Passive Recon (OSINT Only)",
+  "description": "Passive reconnaissance using OSINT sources only. No active scanning. For authorized bug bounty targets within declared scope.",
+  "version": "1.0",
+  "author": "PortableLM",
+  "required_profile": "bugbounty",
+  "requires_approval": true,
+  "authorization_required": true,
+  "model_hints": {
+    "reasoning": "deepseek-r1-70b-local",
+    "code": "llama33-70b-local"
+  },
+  "steps": [
+    {
+      "step": 1,
+      "type": "model_call",
+      "prompt": "You are a bug bounty recon specialist. For the authorized target domain: {{input}}\n\nGenerate a complete passive recon methodology covering:\n1) DNS enumeration via passive sources (crt.sh, SecurityTrails, DNSDumpster)\n2) Google dork queries for the domain (site:, filetype:, inurl:, intitle:)\n3) GitHub/GitLab exposure search queries\n4) Shodan/Censys search queries\n5) Wayback Machine/archive.org URL discovery approach\n6) ASN and IP range lookup approach\n7) Technology fingerprinting via passive means (BuiltWith, Wappalyzer)\n8) Email/employee enumeration via OSINT (LinkedIn, Hunter.io patterns)\n\nIMPORTANT: Passive/OSINT only. No active scanning, no direct requests to target.",
+      "model_hint": "reasoning",
+      "output_var": "recon_plan"
+    },
+    {
+      "step": 2,
+      "type": "mcp_tool",
+      "tool_id": "web_fetch",
+      "args": {"url": "https://crt.sh/?q={{input}}&output=json"},
+      "output_var": "cert_data"
+    },
+    {
+      "step": 3,
+      "type": "model_call",
+      "prompt": "Analyse these certificate transparency results for {{input}}:\n{{cert_data}}\n\nExtract:\n1) All unique subdomains\n2) Interesting service/app names suggesting attack surface\n3) Wildcard certificate scopes\n4) Historical domains and expired certs (potential subdomain takeover candidates)\n5) Third-party services in use (CDN, mail, auth providers)\n6) Prioritised targets to investigate further within bug bounty scope",
+      "model_hint": "reasoning",
+      "output_var": "cert_analysis"
+    },
+    {
+      "step": 4,
+      "type": "mcp_tool",
+      "tool_id": "report_gen",
+      "args": {
+        "filename": "recon_passive_{{input}}_{{timestamp}}.md",
+        "content": "# Passive Recon Report: {{input}}\n**Generated:** {{timestamp}}\n**Scope:** OSINT/Passive only — authorized bug bounty target\n\n## Recon Methodology\n{{recon_plan}}\n\n## Certificate Transparency Analysis\n{{cert_analysis}}"
+      }
+    }
+  ]
+}
