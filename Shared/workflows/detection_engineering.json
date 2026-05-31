@@ -1,0 +1,12 @@
+{
+  "id": "detection_engineering",
+  "name": "Detection Engineering Workflow",
+  "description": "Multi-step workflow: IOC -> Detection rule -> SIEM deployment -> Testing",
+  "version": "1.0",
+  "steps": [
+    {"step": 1, "type": "model_call", "prompt": "Analyze these IOCs and suggest detection approaches: {{iocs}}", "output_var": "detection_strategy"},
+    {"step": 2, "type": "mcp_tool", "tool_id": "sigma_rule_gen", "args": {"iocs": "{{iocs}}"}, "output_var": "sigma_rule"},
+    {"step": 3, "type": "model_call", "prompt": "Generate SIEM queries (Splunk, Elastic, Sentinel) for: {{sigma_rule}}", "output_var": "siem_queries"},
+    {"step": 4, "type": "mcp_tool", "tool_id": "report_gen", "args": {"filename": "detection_{{timestamp}}.md", "content": "# Detection Report\n{{detection_strategy}}\n{{sigma_rule}}\n{{siem_queries}}"}, "output_var": "report"}
+  ]
+}

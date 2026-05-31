@@ -1,0 +1,12 @@
+{
+  "id": "compliance_audit",
+  "name": "Compliance & Audit Workflow",
+  "description": "Collect evidence, map to compliance frameworks, generate report",
+  "version": "1.0",
+  "steps": [
+    {"step": 1, "type": "model_call", "prompt": "Map incident {{incident_id}} to CIS, NIST, PCI-DSS, HIPAA controls", "output_var": "compliance_mapping"},
+    {"step": 2, "type": "mcp_tool", "tool_id": "file_reader", "args": {"path": "{{evidence_root}}"}, "output_var": "evidence_files"},
+    {"step": 3, "type": "model_call", "prompt": "Generate compliance report from evidence and mapping: {{evidence_files}}, {{compliance_mapping}}", "output_var": "compliance_report"},
+    {"step": 4, "type": "mcp_tool", "tool_id": "report_gen", "args": {"filename": "compliance_report_{{timestamp}}.md", "content": "{{compliance_report}}"}}
+  ]
+}

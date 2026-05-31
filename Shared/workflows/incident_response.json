@@ -1,0 +1,14 @@
+{
+  "id": "incident_response",
+  "name": "Full Incident Response Workflow",
+  "description": "Alert -> Triage -> Containment -> Eradication -> Recovery -> Report",
+  "version": "1.0",
+  "steps": [
+    {"step": 1, "type": "agent", "agent": "triage", "input": "{{alert_description}}", "output_var": "triage_result"},
+    {"step": 2, "type": "agent", "agent": "threat_intel", "input": "{{triage_result}}", "output_var": "intelligence"},
+    {"step": 3, "type": "agent", "agent": "detection_engineer", "input": "{{intelligence}}", "output_var": "detection_rules"},
+    {"step": 4, "type": "agent", "agent": "remediation", "input": "{{triage_result}}", "output_var": "remediation_plan"},
+    {"step": 5, "type": "agent", "agent": "ir_coordinator", "input": "{{triage_result}}", "output_var": "ir_plan"},
+    {"step": 6, "type": "mcp_tool", "tool_id": "report_gen", "args": {"filename": "ir_report_{{timestamp}}.md", "content": "# IR Response Report\n{{ir_plan}}\n{{remediation_plan}}"}}
+  ]
+}
