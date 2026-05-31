@@ -1,0 +1,45 @@
+{
+  "id": "ir_triage",
+  "name": "Incident Response Triage",
+  "description": "Intake a security alert or incident description, extract IOCs, generate SIEM detection queries for Splunk/Elastic/Sentinel, and produce prioritised containment steps.",
+  "version": "1.0",
+  "author": "PortableLM",
+  "required_profile": "ir",
+  "requires_approval": false,
+  "model_hints": {
+    "reasoning": "deepseek-r1-70b-local",
+    "code": "llama33-70b-local"
+  },
+  "steps": [
+    {
+      "step": 1,
+      "type": "model_call",
+      "prompt": "You are a senior incident responder. Given this alert or incident description:\n{{input}}\n\nExtract and return as structured JSON:\n1) All IOCs: IPs, hashes (MD5/SHA1/SHA256), domains, URLs, file paths, registry keys, user accounts, process names, service names, mutexes\n2) Attack timeline (if determinable)\n3) Affected systems and assets\n4) Initial classification: severity (critical/high/medium/low), category (malware/intrusion/data-exfil/lateral-movement/privilege-escalation/c2/other)\n5) Confidence level (high/medium/low)\n6) Gaps in evidence that need filling",
+      "model_hint": "reasoning",
+      "output_var": "triage_data"
+    },
+    {
+      "step": 2,
+      "type": "mcp_tool",
+      "tool_id": "mitre_lookup",
+      "args": {"query": "{{input}}"},
+      "output_var": "mitre_mapping"
+    },
+    {
+      "step": 3,
+      "type": "model_call",
+      "prompt": "Using this triage data:\n{{triage_data}}\n\nAnd MITRE ATT&CK mapping:\n{{mitre_mapping}}\n\nGenerate:\n1) Splunk SPL detection queries\n2) Elastic KQL detection queries\n3) Microsoft Sentinel KQL detection queries\n4) Immediate containment steps ordered by priority (isolate/block/disable/preserve)\n5) Evidence to collect: memory dumps, disk images, log sources, network captures\n6) Escalation recommendation with justification",
+      "model_hint": "code",
+      "output_var": "response_plan"
+    },
+    {
+      "step": 4,
+      "type": "mcp_tool",
+      "tool_id": "report_gen",
+      "args": {
+        "filename": "ir_triage_{{timestamp}}.md",
+        "content": "# Incident Response Triage Report\n**Generated:** {{timestamp}}\n\n## Triage Data\n{{triage_data}}\n\n## MITRE ATT&CK Mapping\n{{mitre_mapping}}\n\n## Detection Queries and Response Plan\n{{response_plan}}"
+      }
+    }
+  ]
+}
