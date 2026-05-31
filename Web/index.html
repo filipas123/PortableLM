@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PortableLM — Production Incident Response Dashboard</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <div id="app">
+        <nav class="sidebar">
+            <h1>PortableLM</h1>
+            <ul>
+                <li><a href="#incidents">Incidents</a></li>
+                <li><a href="#detections">Detections</a></li>
+                <li><a href="#compliance">Compliance</a></li>
+                <li><a href="#workflows">Workflows</a></li>
+                <li><a href="#audit">Audit Log</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <div id="incidents" class="view active">
+                <h2>Active Incidents</h2>
+                <div id="incident-list" class="list"></div>
+            </div>
+            <div id="detections" class="view hidden">
+                <h2>Detection Rules</h2>
+                <div id="detection-list" class="list"></div>
+            </div>
+            <div id="compliance" class="view hidden">
+                <h2>Compliance & Evidence</h2>
+                <div id="compliance-list" class="list"></div>
+            </div>
+            <div id="workflows" class="view hidden">
+                <h2>Workflows</h2>
+                <div id="workflow-list" class="list"></div>
+            </div>
+            <div id="audit" class="view hidden">
+                <h2>Audit Log</h2>
+                <div id="audit-log" class="list"></div>
+            </div>
+        </main>
+    </div>
+    <script src="api.js"></script>
+    <script src="assets/app.js"></script>
+</body>
+</html>
