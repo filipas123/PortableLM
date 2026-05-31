@@ -1,0 +1,38 @@
+{
+  "id": "mitre_map",
+  "name": "MITRE ATT&CK Mapper",
+  "description": "Map a TTP description, malware behaviour, or incident to MITRE ATT&CK techniques and generate a prioritised detection engineering plan.",
+  "version": "1.0",
+  "author": "PortableLM",
+  "required_profile": "cybersec",
+  "requires_approval": false,
+  "model_hints": {
+    "reasoning": "deepseek-r1-70b-local",
+    "code": "llama33-70b-local"
+  },
+  "steps": [
+    {
+      "step": 1,
+      "type": "mcp_tool",
+      "tool_id": "mitre_lookup",
+      "args": {"query": "{{input}}"},
+      "output_var": "mitre_data"
+    },
+    {
+      "step": 2,
+      "type": "model_call",
+      "prompt": "You are a detection engineer and threat intelligence analyst. Given this MITRE ATT&CK data:\n{{mitre_data}}\n\nFor the behaviour: {{input}}\n\nProduce:\n1) Primary technique ID and name (e.g. T1059.001)\n2) Sub-technique IDs if applicable\n3) Tactic phase (e.g. Execution, Persistence, Lateral Movement)\n4) Data sources needed for detection (e.g. Process Creation, Network Traffic, File Creation)\n5) EDR telemetry events to collect\n6) Sigma rule skeleton in YAML\n7) Mitigation M-codes with descriptions\n8) Detection priority: Critical/High/Medium/Low\n9) Related threat groups and software known to use this technique",
+      "model_hint": "reasoning",
+      "output_var": "detection_plan"
+    },
+    {
+      "step": 3,
+      "type": "mcp_tool",
+      "tool_id": "report_gen",
+      "args": {
+        "filename": "mitre_map_{{timestamp}}.md",
+        "content": "# MITRE ATT&CK Mapping Report\n**Generated:** {{timestamp}}\n\n## Input Behaviour\n{{input}}\n\n## ATT&CK Data\n{{mitre_data}}\n\n## Detection Engineering Plan\n{{detection_plan}}"
+      }
+    }
+  ]
+}
