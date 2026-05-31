@@ -1,0 +1,45 @@
+{
+  "id": "ioc_to_sigma",
+  "name": "IOC → Sigma Rule",
+  "description": "Extract IOCs from threat intel or log data, map to MITRE ATT&CK, then generate a production-ready Sigma detection rule.",
+  "version": "1.0",
+  "author": "PortableLM",
+  "required_profile": "cybersec",
+  "requires_approval": false,
+  "model_hints": {
+    "reasoning": "deepseek-r1-70b-local",
+    "code": "llama33-70b-local"
+  },
+  "steps": [
+    {
+      "step": 1,
+      "type": "model_call",
+      "prompt": "You are a threat intelligence analyst. Extract all IOCs from the following input. Return structured JSON with fields: type (ip/domain/hash/filepath/registry/mutex/useragent/url), value, confidence (high/medium/low), context.\n\nInput:\n{{input}}",
+      "model_hint": "reasoning",
+      "output_var": "iocs"
+    },
+    {
+      "step": 2,
+      "type": "mcp_tool",
+      "tool_id": "mitre_lookup",
+      "args": {"query": "{{input}}"},
+      "output_var": "mitre_mapping"
+    },
+    {
+      "step": 3,
+      "type": "model_call",
+      "prompt": "You are a detection engineer. Using these IOCs:\n{{iocs}}\n\nAnd this MITRE ATT&CK mapping:\n{{mitre_mapping}}\n\nGenerate a complete, production-ready Sigma rule in YAML. Include: title, id (uuid), status (experimental), description, references, author, date, modified, tags (attack.tXXXX), logsource (product/category/service), detection (selection + condition), falsepositives, level (low/medium/high/critical).",
+      "model_hint": "code",
+      "output_var": "sigma_rule"
+    },
+    {
+      "step": 4,
+      "type": "mcp_tool",
+      "tool_id": "file_writer",
+      "args": {
+        "filename": "sigma_ioc_{{timestamp}}.yml",
+        "content": "{{sigma_rule}}"
+      }
+    }
+  ]
+}
